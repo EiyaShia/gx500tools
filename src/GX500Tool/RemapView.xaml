@@ -1,0 +1,53 @@
+<UserControl x:Class="GX500Tool.RemapView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="6">
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="290"/></Grid.ColumnDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
+
+        <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,6">
+            <Button x:Name="StartButton" Content="▶ Aktifkan virtual controller" Style="{StaticResource AccentButton}" Click="Start_Click"/>
+            <Button x:Name="HideButton" Content="Sembunyikan controller asli" Margin="8,0,0,0" Click="Hide_Click" IsEnabled="False"/>
+            <Button x:Name="UnhideButton" Content="Tampilkan lagi" Margin="8,0,0,0" Click="Unhide_Click" IsEnabled="False"/>
+            <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="12,0" Text="Nonaktif"/>
+        </StackPanel>
+
+        <GroupBox Header="Remap tombol  (Tombol fisik → Output · Turbo)" Grid.Row="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid x:Name="MapGrid">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/><ColumnDefinition Width="170"/>
+                        <ColumnDefinition Width="80"/><ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </ScrollViewer>
+        </GroupBox>
+
+        <StackPanel Grid.Row="1" Grid.Column="1">
+            <GroupBox Header="Turbo">
+                <StackPanel>
+                    <TextBlock x:Name="TurboLabel"/>
+                    <Slider x:Name="TurboSlider" Minimum="2" Maximum="30" IsSnapToTickEnabled="True" TickFrequency="1"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Deadzone analog">
+                <StackPanel>
+                    <TextBlock x:Name="LdzLabel"/>
+                    <Slider x:Name="LdzSlider" Minimum="0" Maximum="40"/>
+                    <TextBlock x:Name="RdzLabel"/>
+                    <Slider x:Name="RdzSlider" Minimum="0" Maximum="40"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Profil">
+                <StackPanel>
+                    <Button Content="Reset semua ke default" Padding="6,3" Click="Reset_Click"/>
+                    <TextBlock x:Name="ProfilePath" TextWrapping="Wrap" FontSize="11" Foreground="#888" Margin="0,6,0,0"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Catatan">
+                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="#BBB"
+                           Text="Gunakan mode Switch untuk hasil terbaik (ada gyro dan controller asli bisa disembunyikan). Di mode X-Input, game bisa melihat 2 controller."/>
+            </GroupBox>
+        </StackPanel>
+    </Grid>
+</UserControl>

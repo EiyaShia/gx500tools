@@ -1,0 +1,28 @@
+<UserControl x:Class="GX500Tool.KeysView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="6">
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
+        <GroupBox Header="Tombol → keyboard / mouse">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid x:Name="KeyGrid">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="170"/></Grid.ColumnDefinitions>
+                </Grid>
+            </ScrollViewer>
+        </GroupBox>
+        <StackPanel Grid.Column="1">
+            <GroupBox Header="Analog">
+                <StackPanel>
+                    <CheckBox x:Name="WasdCheck" Content="Analog kiri → W A S D" Foreground="#E6E6EA" Margin="0,3" Click="Check_Click"/>
+                    <CheckBox x:Name="MouseCheck" Content="Analog kanan → gerak mouse" Foreground="#E6E6EA" Margin="0,3" Click="Check_Click"/>
+                    <TextBlock x:Name="SpeedLabel" Margin="0,6,0,0"/>
+                    <Slider x:Name="SpeedSlider" Minimum="200" Maximum="4000"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Catatan">
+                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="#BBB"
+                           Text="Tombol atau analog yang diubah ke keyboard/mouse tidak lagi dikirim ke virtual controller. Cocok untuk game yang tidak mendukung gamepad, atau untuk navigasi Windows."/>
+            </GroupBox>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,144 @@
+﻿<Window x:Class="GX500Tool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:GX500Tool"
+        Title="GX500 Tool" Height="760" Width="1200" MinWidth="980" MinHeight="620"
+        Background="{StaticResource WindowGradient}" Foreground="{StaticResource TextBrush}"
+        FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13">
+    <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="250"/><ColumnDefinition/></Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Border Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="14,20,14,14">
+                <!-- Brand -->
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8,0,0,22">
+                    <TextBlock Text="GX500" FontSize="30" FontWeight="Bold" Foreground="White"/>
+                    <Border Margin="6,4,0,0" VerticalAlignment="Top" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" CornerRadius="3" Padding="4,0">
+                        <TextBlock Text="TOOL" FontSize="11" FontWeight="Bold" Foreground="{StaticResource GoldBrush}"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Active profile card -->
+                <Button DockPanel.Dock="Top" Click="ProfileCard_Click" Padding="14,12" HorizontalContentAlignment="Stretch"
+                        Background="#1A1636" BorderBrush="#3B2D73" Margin="0,0,0,18">
+                    <Grid Width="190">
+                        <StackPanel>
+                            <TextBlock Text="Profil aktif" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+                            <Border Background="{StaticResource AccentGradient}" CornerRadius="9" Padding="10,2" Margin="0,6,0,0" HorizontalAlignment="Left">
+                                <TextBlock x:Name="ProfileName" Text="Default" FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="&#xE76C;" FontFamily="{StaticResource IconFont}" HorizontalAlignment="Right"
+                                   VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}"/>
+                    </Grid>
+                </Button>
+
+                <!-- Connection status -->
+                <Border DockPanel.Dock="Bottom" Background="#1A1636" BorderBrush="#3B2D73" BorderThickness="1" CornerRadius="12" Padding="14">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="StatusDot" Width="9" Height="9" Fill="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="StatusLabel" Text="Nonaktif" FontWeight="SemiBold" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock x:Name="SourceLabel" Text="Virtual controller belum aktif" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{StaticResource MutedBrush}" Margin="0,6,0,10"/>
+                        <Button x:Name="SidebarStart" Style="{StaticResource AccentButton}" Click="SidebarStart_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="SidebarStartIcon" Text="&#xE768;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="SidebarStartText" Text="Aktifkan" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Navigation -->
+                <StackPanel>
+                    <TextBlock Text="PENGATURAN GAMEPAD" FontSize="11" FontWeight="Bold" Foreground="{StaticResource MutedBrush}" Margin="8,0,0,8"/>
+                    <RadioButton Style="{StaticResource NavItem}" Tag="&#xE8AB;" Content="Remap &amp; Turbo" Uid="PageRemap" Click="Nav_Click" IsChecked="True"/>
+                    <RadioButton Style="{StaticResource NavItem}" Tag="&#xE7AD;" Content="Gyro" Uid="PageGyro" Click="Nav_Click"/>
+                    <RadioButton Style="{StaticResource NavItem}" Tag="&#xE7C8;" Content="Macro" Uid="PageMacro" Click="Nav_Click"/>
+                    <RadioButton Style="{StaticResource NavItem}" Tag="&#xE765;" Content="Keyboard &amp; Mouse" Uid="PageKeys" Click="Nav_Click"/>
+                    <RadioButton x:Name="NavProfiles" Style="{StaticResource NavItem}" Tag="&#xE77B;" Content="Profil" Uid="PageProfiles" Click="Nav_Click"/>
+                    <TextBlock Text="DIAGNOSA" FontSize="11" FontWeight="Bold" Foreground="{StaticResource MutedBrush}" Margin="8,16,0,8"/>
+                    <RadioButton Style="{StaticResource NavItem}" Tag="&#xE7FC;" Content="Tester (X-Input)" Uid="PageTester" Click="Nav_Click"/>
+                    <RadioButton Style="{StaticResource NavItem}" Tag="&#xE9D9;" Content="HID &amp; Gyro mentah" Uid="PageHid" Click="Nav_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Content -->
+        <DockPanel Grid.Column="1" Margin="22,18,22,18">
+            <TextBlock x:Name="PageTitle" DockPanel.Dock="Top" Text="Remap &amp; Turbo" FontSize="24" FontWeight="SemiBold"
+                       Foreground="White" Margin="6,0,0,10"/>
+            <Grid x:Name="Pages">
+                <local:RemapView x:Name="PageRemap"/>
+                <local:GyroView x:Name="PageGyro" Visibility="Collapsed"/>
+                <local:MacroView x:Name="PageMacro" Visibility="Collapsed"/>
+                <local:KeysView x:Name="PageKeys" Visibility="Collapsed"/>
+                <local:ProfilesView x:Name="PageProfiles" Visibility="Collapsed"/>
+
+                <Grid x:Name="PageTester" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/><ColumnDefinition/><ColumnDefinition Width="280"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
+
+                    <TextBlock x:Name="XStatus" Grid.ColumnSpan="3" Margin="8" Foreground="{StaticResource MutedBrush}" Text="Mencari controller XInput..."/>
+
+                    <GroupBox Header="Analog Kiri" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top">
+                        <StackPanel>
+                            <Canvas x:Name="LeftStick" Width="200" Height="200"/>
+                            <TextBlock x:Name="LeftInfo" Margin="0,8,0,0" FontFamily="Consolas"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="Analog Kanan" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top">
+                        <StackPanel>
+                            <Canvas x:Name="RightStick" Width="200" Height="200"/>
+                            <TextBlock x:Name="RightInfo" Margin="0,8,0,0" FontFamily="Consolas"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <ScrollViewer Grid.Row="1" Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <GroupBox Header="Tombol">
+                                <WrapPanel x:Name="ButtonPanel"/>
+                            </GroupBox>
+                            <GroupBox Header="Trigger">
+                                <StackPanel>
+                                    <TextBlock Text="LT"/><ProgressBar x:Name="LtBar" Height="10" Maximum="255" Margin="0,4,0,0"/>
+                                    <TextBlock Text="RT" Margin="0,8,0,0"/><ProgressBar x:Name="RtBar" Height="10" Maximum="255" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </GroupBox>
+                            <GroupBox Header="Deadzone &amp; Getar">
+                                <StackPanel>
+                                    <TextBlock x:Name="DzLabel" Text="Deadzone tampilan: 8%"/>
+                                    <Slider x:Name="DzSlider" Minimum="0" Maximum="40" Value="8"/>
+                                    <TextBlock Text="Motor kiri (kuat)"/>
+                                    <Slider x:Name="VibL" Maximum="1" ValueChanged="Vib_Changed"/>
+                                    <TextBlock Text="Motor kanan (halus)"/>
+                                    <Slider x:Name="VibR" Maximum="1" ValueChanged="Vib_Changed"/>
+                                </StackPanel>
+                            </GroupBox>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <Grid x:Name="PageHid" Visibility="Collapsed">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
+                    <WrapPanel Margin="6">
+                        <ComboBox x:Name="HidList" Width="480"/>
+                        <Button Content="Refresh" Margin="8,0,0,0" Click="RefreshHid_Click"/>
+                        <Button x:Name="HidConnect" Content="Hubungkan" Margin="8,0,0,0" Style="{StaticResource AccentButton}" Click="HidConnect_Click"/>
+                        <CheckBox x:Name="ShowAllHid" Content="Tampilkan semua interface HID" VerticalAlignment="Center" Margin="14,0" Click="RefreshHid_Click"/>
+                    </WrapPanel>
+                    <GroupBox Header="Gyro / Akselerometer (mode Switch)" Grid.Row="1">
+                        <TextBlock x:Name="GyroText" FontFamily="Consolas" Text="Belum ada data IMU."/>
+                    </GroupBox>
+                    <GroupBox Header="Raw HID report" Grid.Row="2">
+                        <TextBox x:Name="RawText" FontFamily="Consolas" IsReadOnly="True" Foreground="#B8F0B8" TextWrapping="Wrap"/>
+                    </GroupBox>
+                </Grid>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</Window>
