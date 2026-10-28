@@ -86,9 +86,10 @@ public sealed class SwitchSource : IPadSource
 
         byte right = r[3], shared = r[4], left = r[5];
         void Map(byte reg, int bit, PadButton p) { if ((reg & bit) != 0) s.Buttons |= p; }
-        // Positional mapping to Xbox layout: Switch B (south) = A, A (east) = B, Y (west) = X, X (north) = Y.
-        Map(right, 0x04, PadButton.A); Map(right, 0x08, PadButton.B);
-        Map(right, 0x01, PadButton.X); Map(right, 0x02, PadButton.Y);
+        // The GX500 reports face buttons by their printed label in Switch mode (A bit = button labeled A),
+        // so map label-to-label. Bits: Y 0x01, X 0x02, B 0x04, A 0x08.
+        Map(right, 0x08, PadButton.A); Map(right, 0x04, PadButton.B);
+        Map(right, 0x02, PadButton.X); Map(right, 0x01, PadButton.Y);
         Map(right, 0x40, PadButton.RB); Map(right, 0x80, PadButton.RT);
         Map(shared, 0x01, PadButton.Back); Map(shared, 0x02, PadButton.Start);
         Map(shared, 0x04, PadButton.RS); Map(shared, 0x08, PadButton.LS);

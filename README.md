@@ -8,6 +8,7 @@ Software pendamping untuk gamepad **Rexus GX500** di Windows. GX500 tidak punya 
 
 - **Remap tombol** — ubah fungsi tombol mana pun, atau nonaktifkan.
 - **Turbo** per tombol, 2–30 tekan per detik.
+- **Tipe gamepad** per profil — game melihat controller **Xbox 360** atau **PlayStation (DualShock 4)**.
 - **Gyro** (mode Switch) → gerak mouse atau analog kanan. Sensitivitas, invert, deadzone, smoothing, kalibrasi drift, dan mode aktif (selalu / saat tombol ditahan / toggle).
 - **Macro** — rekam langsung dari gamepad atau tulis sebagai teks. Mode sekali jalan, ulang selama ditahan, atau toggle.
 - **Gamepad → keyboard & mouse** — tombol ke key/mouse button, analog kiri → WASD, analog kanan → mouse.

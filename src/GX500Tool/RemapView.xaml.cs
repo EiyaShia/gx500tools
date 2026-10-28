@@ -92,7 +92,6 @@ public partial class RemapView : UserControl
         }
         TypeXbox.IsChecked = Profile.Type == GamepadType.Xbox;
         TypePlayStation.IsChecked = Profile.Type == GamepadType.PlayStation;
-        TypeNintendo.IsChecked = Profile.Type == GamepadType.Nintendo;
         TurboSlider.Value = Profile.TurboHz;
         LdzSlider.Value = Profile.LeftDeadzone * 100;
         RdzSlider.Value = Profile.RightDeadzone * 100;
@@ -102,9 +101,7 @@ public partial class RemapView : UserControl
 
     void Type_Click(object sender, RoutedEventArgs e)
     {
-        Profile.Type = TypePlayStation.IsChecked == true ? GamepadType.PlayStation
-                     : TypeNintendo.IsChecked == true ? GamepadType.Nintendo
-                     : GamepadType.Xbox;
+        Profile.Type = TypePlayStation.IsChecked == true ? GamepadType.PlayStation : GamepadType.Xbox;
         Changed();
         Session.NotifyChanged(); // refresh status labels with the new controller name
     }
@@ -113,9 +110,8 @@ public partial class RemapView : UserControl
     {
         TypeHint.Text = Profile.Type switch
         {
-            GamepadType.PlayStation => "Game melihat controller DualShock 4. Tombol bawah = ✕, kanan = ○. Capture = klik touchpad.",
-            GamepadType.Nintendo => "Game melihat controller Xbox, tapi tombol berlabel A di gamepad tetap jadi A (tidak berdasarkan posisi).",
-            _ => "Game melihat controller Xbox 360. Tombol dipetakan berdasarkan posisi: tombol bawah = A.",
+            GamepadType.PlayStation => "Game melihat controller DualShock 4. A = ✕, B = ○, X = □, Y = △. Capture = klik touchpad.",
+            _ => "Game melihat controller Xbox 360. Tombol sesuai label di gamepad: A = A, B = B.",
         };
         TurboLabel.Text = $"Kecepatan: {Profile.TurboHz:0} tekan/detik";
         LdzLabel.Text = $"Kiri: {Profile.LeftDeadzone * 100:0}%";

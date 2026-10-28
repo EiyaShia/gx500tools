@@ -5,7 +5,7 @@ using GX500Tool.Input;
 
 namespace GX500Tool.Mapping;
 
-/// <summary>What the game sees. Nintendo = Xbox pad with A/B and X/Y swapped so labels match a Switch layout.</summary>
+/// <summary>What the game sees. Nintendo is a removed preset kept only so old profiles still load; it is read as Xbox.</summary>
 public enum GamepadType { Xbox, PlayStation, Nintendo }
 
 public sealed class Profile
@@ -48,7 +48,12 @@ public sealed class Profile
 
     public static Profile? Load(string path)
     {
-        try { return JsonSerializer.Deserialize<Profile>(File.ReadAllText(path), Json); }
+        try
+        {
+            var p = JsonSerializer.Deserialize<Profile>(File.ReadAllText(path), Json);
+            if (p?.Type == GamepadType.Nintendo) p.Type = GamepadType.Xbox;
+            return p;
+        }
         catch { return null; }
     }
 

@@ -89,7 +89,6 @@ public sealed class Engine : IDisposable
                     if ((consumed & PadButton.RT) != 0) input.RT = 0;
 
                     var output = _mapper.Apply(input, profile, now);
-                    if (profile.Type == GamepadType.Nintendo) output.Buttons = Mapper.SwapFaceButtons(output.Buttons);
                     output.Buttons |= injected;
                     if ((injected & PadButton.LT) != 0) output.LT = 1;
                     if ((injected & PadButton.RT) != 0) output.RT = 1;
