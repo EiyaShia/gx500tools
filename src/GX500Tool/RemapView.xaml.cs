@@ -90,6 +90,9 @@ public partial class RemapView : UserControl
             r.Target.SelectedItem = !Profile.Remap.TryGetValue(b, out var t) ? Same : t == PadButton.None ? Disabled : t.ToString();
             r.Turbo.IsChecked = Profile.Turbo.Contains(b);
         }
+        TypeXbox.IsChecked = Profile.Type == GamepadType.Xbox;
+        TypePlayStation.IsChecked = Profile.Type == GamepadType.PlayStation;
+        TypeNintendo.IsChecked = Profile.Type == GamepadType.Nintendo;
         TurboSlider.Value = Profile.TurboHz;
         LdzSlider.Value = Profile.LeftDeadzone * 100;
         RdzSlider.Value = Profile.RightDeadzone * 100;
@@ -97,8 +100,23 @@ public partial class RemapView : UserControl
         Changed();
     }
 
+    void Type_Click(object sender, RoutedEventArgs e)
+    {
+        Profile.Type = TypePlayStation.IsChecked == true ? GamepadType.PlayStation
+                     : TypeNintendo.IsChecked == true ? GamepadType.Nintendo
+                     : GamepadType.Xbox;
+        Changed();
+        Session.NotifyChanged(); // refresh status labels with the new controller name
+    }
+
     void Changed()
     {
+        TypeHint.Text = Profile.Type switch
+        {
+            GamepadType.PlayStation => "Game melihat controller DualShock 4. Tombol bawah = ✕, kanan = ○. Capture = klik touchpad.",
+            GamepadType.Nintendo => "Game melihat controller Xbox, tapi tombol berlabel A di gamepad tetap jadi A (tidak berdasarkan posisi).",
+            _ => "Game melihat controller Xbox 360. Tombol dipetakan berdasarkan posisi: tombol bawah = A.",
+        };
         TurboLabel.Text = $"Kecepatan: {Profile.TurboHz:0} tekan/detik";
         LdzLabel.Text = $"Kiri: {Profile.LeftDeadzone * 100:0}%";
         RdzLabel.Text = $"Kanan: {Profile.RightDeadzone * 100:0}%";
@@ -131,7 +149,7 @@ public partial class RemapView : UserControl
         }
         else
         {
-            StatusText.Text = $"Aktif · input: {engine.Source.Name} → virtual Xbox 360";
+            StatusText.Text = $"Aktif · input: {engine.Source.Name} → virtual {engine.PadName}";
             StartButton.Content = "■ Matikan virtual controller";
             HideButton.IsEnabled = UnhideButton.IsEnabled = engine.Source is SwitchSource && HidHide.IsInstalled;
             _timer.Start();

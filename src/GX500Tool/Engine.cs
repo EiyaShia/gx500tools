@@ -13,7 +13,7 @@ public sealed class Engine : IDisposable
     [DllImport("winmm.dll")] static extern uint timeEndPeriod(uint ms);
 
     readonly IPadSource _source;
-    readonly VirtualPad _pad;
+    IVirtualPad _pad;
     readonly Mapper _mapper = new();
     readonly MacroPlayer _macros = new();
     readonly KeyBridge _keys = new();
@@ -23,6 +23,7 @@ public sealed class Engine : IDisposable
 
     public Profile Profile { get; set; }
     public IPadSource Source => _source;
+    public string PadName => KindFor(Profile) == PadKind.DualShock4 ? "DualShock 4" : "Xbox 360";
     public GyroProcessor Gyro { get; } = new();
     public MacroRecorder Recorder { get; } = new();
     /// <summary>Latest mapped output, for display.</summary>
@@ -32,8 +33,7 @@ public sealed class Engine : IDisposable
     {
         _source = source;
         Profile = profile;
-        _pad = new VirtualPad();
-        _pad.Rumble += (l, s) => _source.SetRumble(l, s);
+        _pad = CreatePad(profile);
         _thread = new Thread(Loop) { IsBackground = true, Name = "Engine", Priority = ThreadPriority.AboveNormal };
         _thread.Start();
     }
@@ -44,6 +44,15 @@ public sealed class Engine : IDisposable
         IPadSource? source = SwitchSource.TryOpen();
         source ??= XInputSource.FindFirst(); // before the virtual pad exists, so we don't read our own output
         return source == null ? null : new Engine(source, profile);
+    }
+
+    static PadKind KindFor(Profile p) => p.Type == GamepadType.PlayStation ? PadKind.DualShock4 : PadKind.Xbox360;
+
+    IVirtualPad CreatePad(Profile p)
+    {
+        var pad = VirtualPad.Create(KindFor(p));
+        pad.Rumble += (l, s) => _source.SetRumble(l, s);
+        return pad;
     }
 
     void Loop()
@@ -61,6 +70,12 @@ public sealed class Engine : IDisposable
                     double dt = (now - last) / 1000.0;
                     last = now;
                     var profile = Profile;
+                    if (KindFor(profile) != _pad.Kind)
+                    {
+                        // Profile switched to another controller type: replug as the new kind.
+                        _pad.Dispose();
+                        _pad = CreatePad(profile);
+                    }
                     var physical = Mapper.Physical(input);
 
                     Recorder.Feed(physical);
@@ -74,6 +89,7 @@ public sealed class Engine : IDisposable
                     if ((consumed & PadButton.RT) != 0) input.RT = 0;
 
                     var output = _mapper.Apply(input, profile, now);
+                    if (profile.Type == GamepadType.Nintendo) output.Buttons = Mapper.SwapFaceButtons(output.Buttons);
                     output.Buttons |= injected;
                     if ((injected & PadButton.LT) != 0) output.LT = 1;
                     if ((injected & PadButton.RT) != 0) output.RT = 1;

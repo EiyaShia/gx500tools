@@ -24,6 +24,17 @@
         </GroupBox>
 
         <StackPanel Grid.Row="1" Grid.Column="1">
+            <GroupBox Header="Tipe gamepad">
+                <StackPanel>
+                    <RadioButton x:Name="TypeXbox" GroupName="padtype" Margin="0,3" Click="Type_Click"
+                                 Content="Xbox  ·  A B X Y"/>
+                    <RadioButton x:Name="TypePlayStation" GroupName="padtype" Margin="0,3" Click="Type_Click"
+                                 Content="PlayStation  ·  ✕ ○ □ △"/>
+                    <RadioButton x:Name="TypeNintendo" GroupName="padtype" Margin="0,3" Click="Type_Click"
+                                 Content="Nintendo  ·  A/B dan X/Y ditukar"/>
+                    <TextBlock x:Name="TypeHint" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0"/>
+                </StackPanel>
+            </GroupBox>
             <GroupBox Header="Turbo">
                 <StackPanel>
                     <TextBlock x:Name="TurboLabel"/>

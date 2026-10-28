@@ -5,9 +5,13 @@ using GX500Tool.Input;
 
 namespace GX500Tool.Mapping;
 
+/// <summary>What the game sees. Nintendo = Xbox pad with A/B and X/Y swapped so labels match a Switch layout.</summary>
+public enum GamepadType { Xbox, PlayStation, Nintendo }
+
 public sealed class Profile
 {
     public string Name { get; set; } = "Default";
+    public GamepadType Type { get; set; } = GamepadType.Xbox;
     /// <summary>Game executables (e.g. "eldenring.exe") that auto-activate this profile.</summary>
     public List<string> Processes { get; set; } = new();
 

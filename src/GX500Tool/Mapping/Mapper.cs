@@ -36,6 +36,18 @@ public sealed class Mapper
         return o;
     }
 
+    /// <summary>Swaps A↔B and X↔Y (Nintendo label layout).</summary>
+    public static PadButton SwapFaceButtons(PadButton b)
+    {
+        const PadButton face = PadButton.A | PadButton.B | PadButton.X | PadButton.Y;
+        var r = b & ~face;
+        if ((b & PadButton.A) != 0) r |= PadButton.B;
+        if ((b & PadButton.B) != 0) r |= PadButton.A;
+        if ((b & PadButton.X) != 0) r |= PadButton.Y;
+        if ((b & PadButton.Y) != 0) r |= PadButton.X;
+        return r;
+    }
+
     /// <summary>Pressed buttons including analog triggers past halfway.</summary>
     public static PadButton Physical(in PadState s)
     {

@@ -81,7 +81,7 @@ public partial class MainWindow : Window
         var engine = Session.Engine;
         StatusDot.Fill = (Brush)FindResource(engine != null ? "OkBrush" : "MutedBrush");
         StatusLabel.Text = engine != null ? "Terhubung" : "Nonaktif";
-        if (engine != null) SourceLabel.Text = engine.Source.Name + " → virtual Xbox 360";
+        if (engine != null) SourceLabel.Text = $"{engine.Source.Name} → virtual {engine.PadName}";
         else if (!SourceLabel.Text.StartsWith("G")) SourceLabel.Text = "Virtual controller belum aktif"; // keep error messages
         SidebarStartText.Text = engine != null ? "Matikan" : "Aktifkan";
         SidebarStartIcon.Text = engine != null ? "" : "";
