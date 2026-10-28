@@ -13,6 +13,7 @@ Software pendamping untuk gamepad **Rexus GX500** di Windows. GX500 tidak punya 
 - **Macro** — rekam langsung dari gamepad atau tulis sebagai teks. Mode sekali jalan, ulang selama ditahan, atau toggle.
 - **Gamepad → keyboard & mouse** — tombol ke key/mouse button, analog kiri → WASD, analog kanan → mouse.
 - **Profil per game** — profil berganti otomatis sesuai game (`.exe`) yang sedang aktif.
+- **Indikator baterai** (perkiraan) di sidebar dan tray, dengan notifikasi saat baterai rendah.
 - **Tester** — cek tombol, trigger, drift analog, deadzone, dan getar.
 - Berjalan di **system tray**, bisa otomatis mulai bersama Windows.
 

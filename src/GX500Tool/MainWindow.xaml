@@ -43,6 +43,16 @@
                         </StackPanel>
                         <TextBlock x:Name="SourceLabel" Text="Virtual controller belum aktif" FontSize="11" TextWrapping="Wrap"
                                    Foreground="{StaticResource MutedBrush}" Margin="0,6,0,10"/>
+                        <StackPanel x:Name="BatteryPanel" Orientation="Horizontal" Margin="0,0,0,12" Visibility="Collapsed"
+                                    ToolTip="Perkiraan: GX500 hanya melaporkan beberapa level baterai, bukan persen pasti.">
+                            <Grid Width="26" Height="13" VerticalAlignment="Center">
+                                <Border BorderBrush="{StaticResource MutedBrush}" BorderThickness="1.5" CornerRadius="3"/>
+                                <Border x:Name="BatteryFill" HorizontalAlignment="Left" Margin="3" CornerRadius="1" Width="0"
+                                        Background="{StaticResource OkBrush}"/>
+                            </Grid>
+                            <Border Width="2" Height="5" Background="{StaticResource MutedBrush}" VerticalAlignment="Center" CornerRadius="0,1,1,0"/>
+                            <TextBlock x:Name="BatteryLabel" Margin="8,0,0,0" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <Button x:Name="SidebarStart" Style="{StaticResource AccentButton}" Click="SidebarStart_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock x:Name="SidebarStartIcon" Text="&#xE768;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center"/>

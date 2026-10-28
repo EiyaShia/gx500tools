@@ -5,6 +5,8 @@ public interface IPadSource : IDisposable
     string Name { get; }
     bool TryRead(out PadState state);
     void SetRumble(double large, double small) { }
+    /// <summary>Null when the pad doesn't report it (e.g. wired XInput).</summary>
+    BatteryInfo? Battery => null;
 }
 
 public sealed class XInputSource : IPadSource
@@ -49,6 +51,8 @@ public sealed class XInputSource : IPadSource
 
     public void SetRumble(double large, double small) => XInput.SetVibration(_slot, large, small);
 
+    public BatteryInfo? Battery => XInput.GetBattery(_slot);
+
     public void Dispose() => XInput.SetVibration(_slot, 0, 0);
 }
 
@@ -61,6 +65,9 @@ public sealed class SwitchSource : IPadSource
     readonly object _lock = new();
     PadState _latest;
     DateTime _lastReport = DateTime.MinValue;
+    volatile BatteryInfo? _battery;
+
+    public BatteryInfo? Battery => _battery;
 
     public string Name => "Switch mode (Pro Controller)";
     public string DevicePath { get; }
@@ -83,6 +90,10 @@ public sealed class SwitchSource : IPadSource
     {
         if (r[0] != 0x30 || r.Length < 25) return;
         var s = new PadState();
+
+        // Byte 2 high nibble: battery level 0..8 in steps of 2 (bits 5-7) plus charging flag (bit 4).
+        int level = (r[2] >> 4) & 0x0E;
+        _battery = new BatteryInfo(level * 100 / 8, Charging: (r[2] & 0x10) != 0);
 
         byte right = r[3], shared = r[4], left = r[5];
         void Map(byte reg, int bit, PadButton p) { if ((reg & bit) != 0) s.Buttons |= p; }

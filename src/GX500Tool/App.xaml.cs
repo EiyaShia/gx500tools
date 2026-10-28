@@ -24,6 +24,15 @@ public partial class App : Application
         Switcher = new AutoSwitcher();
         Switcher.Switched += name => _tray.Notify($"Profil: {name}");
 
+        Session.BatteryChanged += (old, now) =>
+        {
+            if (now is { IsLow: true } && old is not { IsLow: true })
+                _tray.Notify($"Baterai GX500 rendah ({now.Percent}%). Segera isi ulang.");
+        };
+        var batteryTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        batteryTimer.Tick += (_, _) => Session.PollBattery();
+        batteryTimer.Start();
+
         if (Session.Settings.AutoStartEngine)
         {
             try { Session.Start(); } catch { /* reported when the user starts it manually */ }

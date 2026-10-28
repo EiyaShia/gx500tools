@@ -19,6 +19,7 @@ public sealed class TrayIcon : IDisposable
         _icon.DoubleClick += (_, _) => show();
         _icon.ContextMenuStrip.Opening += (_, _) => BuildMenu(show, exit);
         Session.Changed += UpdateText;
+        Session.BatteryChanged += OnBatteryChanged;
         UpdateText();
     }
 
@@ -60,15 +61,19 @@ public sealed class TrayIcon : IDisposable
 
     void UpdateText()
     {
-        var text = $"GX500 Tool · {Session.Profile.Name} · {(Session.Engine == null ? "nonaktif" : "aktif")}";
+        var battery = Session.Battery is { } b ? $" · baterai {b.Percent}%{(b.Charging ? "⚡" : "")}" : "";
+        var text = $"GX500 Tool · {Session.Profile.Name} · {(Session.Engine == null ? "nonaktif" : "aktif")}{battery}";
         _icon.Text = text.Length > 63 ? text[..63] : text; // NotifyIcon limit
     }
+
+    void OnBatteryChanged(Input.BatteryInfo? old, Input.BatteryInfo? now) => UpdateText();
 
     public void Notify(string message) => _icon.ShowBalloonTip(2000, "GX500 Tool", message, ToolTipIcon.None);
 
     public void Dispose()
     {
         Session.Changed -= UpdateText;
+        Session.BatteryChanged -= OnBatteryChanged;
         _icon.Visible = false;
         _icon.Dispose();
     }

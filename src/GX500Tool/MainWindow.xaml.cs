@@ -39,6 +39,7 @@ public partial class MainWindow : Window
         }
 
         Session.Changed += UpdateSidebar;
+        Session.BatteryChanged += (_, b) => UpdateBattery(b);
         UpdateSidebar();
 
         DzSlider.ValueChanged += (_, _) => DzLabel.Text = $"Deadzone tampilan: {DzSlider.Value:0}%";
@@ -85,6 +86,17 @@ public partial class MainWindow : Window
         else if (!SourceLabel.Text.StartsWith("G")) SourceLabel.Text = "Virtual controller belum aktif"; // keep error messages
         SidebarStartText.Text = engine != null ? "Matikan" : "Aktifkan";
         SidebarStartIcon.Text = engine != null ? "" : "";
+    }
+
+    void UpdateBattery(BatteryInfo? b)
+    {
+        BatteryPanel.Visibility = b == null ? Visibility.Collapsed : Visibility.Visible;
+        if (b == null) return;
+        BatteryFill.Width = 17 * b.Percent / 100.0;
+        BatteryFill.Background = b.IsLow ? new SolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71))
+                               : b.Percent <= 50 ? (Brush)FindResource("GoldBrush")
+                               : (Brush)FindResource("OkBrush");
+        BatteryLabel.Text = (b.Charging ? "⚡ " : "") + b;
     }
 
     void PollXInput()

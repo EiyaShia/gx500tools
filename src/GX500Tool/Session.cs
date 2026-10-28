@@ -168,4 +168,19 @@ public static class Session
     public static bool IsHidden => _hiddenPath != null;
 
     public static void NotifyChanged() => Changed?.Invoke();
+
+    /// <summary>Latest battery reading from the running engine's pad; null when unknown or stopped.</summary>
+    public static Input.BatteryInfo? Battery { get; private set; }
+
+    /// <summary>Raised on the UI thread when the battery reading changes (old, new).</summary>
+    public static event Action<Input.BatteryInfo?, Input.BatteryInfo?>? BatteryChanged;
+
+    public static void PollBattery()
+    {
+        var now = Engine?.Source.Battery;
+        if (now == Battery) return; // records compare by value
+        var old = Battery;
+        Battery = now;
+        BatteryChanged?.Invoke(old, now);
+    }
 }

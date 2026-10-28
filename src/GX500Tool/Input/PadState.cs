@@ -12,6 +12,14 @@ public enum PadButton : uint
     Capture = 1 << 17,
 }
 
+/// <summary>Approximate battery level; the GX500 only reports a few coarse steps, never an exact percentage.</summary>
+public record BatteryInfo(int Percent, bool Charging)
+{
+    public bool IsLow => Percent <= 25 && !Charging;
+
+    public override string ToString() => $"{Percent}%{(Charging ? " · mengisi" : "")}";
+}
+
 /// <summary>Unified controller state: sticks -1..1 (Y up positive), triggers 0..1.</summary>
 public struct PadState
 {
