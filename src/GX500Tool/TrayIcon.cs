@@ -12,7 +12,7 @@ public sealed class TrayIcon : IDisposable
     {
         _icon = new NotifyIcon
         {
-            Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!) ?? SystemIcons.Application,
+            Icon = LoadIcon(),
             Visible = true,
             ContextMenuStrip = new ContextMenuStrip(),
         };
@@ -20,6 +20,15 @@ public sealed class TrayIcon : IDisposable
         _icon.ContextMenuStrip.Opening += (_, _) => BuildMenu(show, exit);
         Session.Changed += UpdateText;
         UpdateText();
+    }
+
+    /// <summary>Picks the small (tray-sized) frame from the embedded app.ico instead of downscaling the 32 px one.</summary>
+    static Icon LoadIcon()
+    {
+        var res = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/app.ico"));
+        if (res == null) return SystemIcons.Application;
+        using var stream = res.Stream;
+        return new Icon(stream, SystemInformation.SmallIconSize);
     }
 
     void BuildMenu(Action show, Action exit)

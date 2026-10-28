@@ -7,9 +7,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Version>0.2.0</Version>
+    <ApplicationIcon>app.ico</ApplicationIcon>
     <!-- WinForms only for the tray NotifyIcon; keep its namespaces out of implicit usings to avoid WPF name clashes. -->
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <Using Remove="System.Windows.Forms" />
