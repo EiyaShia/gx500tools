@@ -92,6 +92,8 @@ public partial class RemapView : UserControl
         }
         TypeXbox.IsChecked = Profile.Type == GamepadType.Xbox;
         TypePlayStation.IsChecked = Profile.Type == GamepadType.PlayStation;
+        HideCheck.IsChecked = Session.Settings.HideController;
+        HideCheck.IsEnabled = HidHide.IsInstalled;
         TurboSlider.Value = Profile.TurboHz;
         LdzSlider.Value = Profile.LeftDeadzone * 100;
         RdzSlider.Value = Profile.RightDeadzone * 100;
@@ -139,28 +141,27 @@ public partial class RemapView : UserControl
         {
             _timer.Stop();
             StartButton.Content = "▶ Aktifkan virtual controller";
-            HideButton.IsEnabled = UnhideButton.IsEnabled = false;
             if (!StatusText.Text.StartsWith("G")) StatusText.Text = "Nonaktif"; // keep error messages visible
             foreach (var r in _rows.Values) r.Live.Background = KeyBrush;
         }
         else
         {
-            StatusText.Text = $"Aktif · input: {engine.Source.Name} → virtual {engine.PadName}";
+            StatusText.Text = $"Aktif · input: {engine.Source.Name} → virtual {engine.PadName}"
+                + (Session.IsHidden ? " · controller asli disembunyikan" : "")
+                + (Session.HideError != null ? " · HidHide gagal: " + Session.HideError : "");
             StartButton.Content = "■ Matikan virtual controller";
-            HideButton.IsEnabled = UnhideButton.IsEnabled = engine.Source is SwitchSource && HidHide.IsInstalled;
             _timer.Start();
         }
         LoadIntoUi();
     }
 
-    void Hide_Click(object sender, RoutedEventArgs e) => RunHidHide(HidHide.Hide, "Controller asli disembunyikan dari game.");
-    void Unhide_Click(object sender, RoutedEventArgs e) => RunHidHide(HidHide.Unhide, "Controller asli terlihat lagi oleh game.");
-
-    void RunHidHide(Action<string> action, string done)
+    void HideCheck_Click(object sender, RoutedEventArgs e)
     {
-        if (Session.Engine?.Source is not SwitchSource s) return;
-        try { action(s.DevicePath); StatusText.Text = done; }
-        catch (Exception ex) { StatusText.Text = "HidHide gagal: " + ex.Message; }
+        bool hide = HideCheck.IsChecked == true;
+        Session.SetSetting(s => s.HideController = hide);
+        if (Session.Engine == null) return; // applied on next start
+        if (hide) Session.HideNow(); else Session.UnhideNow();
+        OnSessionChanged();
     }
 
     void Reset_Click(object sender, RoutedEventArgs e)

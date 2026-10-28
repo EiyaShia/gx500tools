@@ -7,8 +7,9 @@
 
         <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,6">
             <Button x:Name="StartButton" Content="▶ Aktifkan virtual controller" Style="{StaticResource AccentButton}" Click="Start_Click"/>
-            <Button x:Name="HideButton" Content="Sembunyikan controller asli" Margin="8,0,0,0" Click="Hide_Click" IsEnabled="False"/>
-            <Button x:Name="UnhideButton" Content="Tampilkan lagi" Margin="8,0,0,0" Click="Unhide_Click" IsEnabled="False"/>
+            <CheckBox x:Name="HideCheck" Margin="14,0,0,0" VerticalAlignment="Center" Click="HideCheck_Click"
+                      Content="Sembunyikan controller asli saat aktif"
+                      ToolTip="Mode Switch saja. Controller asli otomatis terlihat lagi saat virtual controller dimatikan atau app ditutup. Butuh izin admin (UAC)."/>
             <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="12,0" Text="Nonaktif"/>
         </StackPanel>
 

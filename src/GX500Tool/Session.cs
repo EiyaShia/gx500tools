@@ -9,6 +9,8 @@ public sealed class AppSettings
     public string ActiveProfile { get; set; } = "Default";
     public bool AutoSwitch { get; set; } = true;
     public bool AutoStartEngine { get; set; } = true;
+    /// <summary>Hide the physical pad (HidHide) while the virtual pad runs; shown again when it stops.</summary>
+    public bool HideController { get; set; }
 }
 
 /// <summary>State shared by all tabs and the tray: profiles, the active one, and the running engine.</summary>
@@ -129,6 +131,7 @@ public static class Session
     public static bool Start()
     {
         Engine = Engine.Start(Profile);
+        if (Settings.HideController) HideNow();
         Changed?.Invoke();
         return Engine != null;
     }
@@ -136,10 +139,33 @@ public static class Session
     public static void Stop()
     {
         if (Engine == null) return;
+        UnhideNow();
         Engine.Dispose();
         Engine = null;
         Changed?.Invoke();
     }
+
+    /// <summary>Device path currently hidden by us, so it can be shown again on stop/exit.</summary>
+    static string? _hiddenPath;
+
+    /// <summary>Last HidHide failure (e.g. the UAC prompt was declined), for display.</summary>
+    public static string? HideError { get; private set; }
+
+    public static void HideNow()
+    {
+        if (Engine?.Source is not Input.SwitchSource s || !Output.HidHide.IsInstalled || _hiddenPath != null) return;
+        try { Output.HidHide.Hide(s.DevicePath); _hiddenPath = s.DevicePath; HideError = null; }
+        catch (Exception ex) { HideError = ex.Message; }
+    }
+
+    public static void UnhideNow()
+    {
+        if (_hiddenPath == null) return;
+        try { Output.HidHide.Unhide(_hiddenPath); _hiddenPath = null; HideError = null; }
+        catch (Exception ex) { HideError = ex.Message; }
+    }
+
+    public static bool IsHidden => _hiddenPath != null;
 
     public static void NotifyChanged() => Changed?.Invoke();
 }

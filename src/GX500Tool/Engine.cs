@@ -101,6 +101,18 @@ public sealed class Engine : IDisposable
                         output.RY = Math.Clamp(output.RY + gy, -1, 1);
                     }
 
+                    // Motion for the DS4 pad, with the gyro calibration applied.
+                    if (output.Imu is { } imu)
+                    {
+                        var g = profile.Gyro;
+                        output.Imu = imu with
+                        {
+                            GyroX = (short)Math.Clamp(imu.GyroX - g.BiasX, short.MinValue, short.MaxValue),
+                            GyroY = (short)Math.Clamp(imu.GyroY - g.BiasY, short.MinValue, short.MaxValue),
+                            GyroZ = (short)Math.Clamp(imu.GyroZ - g.BiasZ, short.MinValue, short.MaxValue),
+                        };
+                    }
+
                     _pad.Submit(output);
                     Output = output;
                 }

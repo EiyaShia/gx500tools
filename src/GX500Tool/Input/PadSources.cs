@@ -68,7 +68,7 @@ public sealed class SwitchSource : IPadSource
     SwitchSource(HidSharp.HidDevice device)
     {
         DevicePath = device.DevicePath;
-        _monitor = new HidMonitor(device);
+        _monitor = new HidMonitor(device) { RestoreSimpleModeOnDispose = true };
         _monitor.ReportReceived += OnReport;
         _monitor.Start();
     }

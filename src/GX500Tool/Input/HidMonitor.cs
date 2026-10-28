@@ -62,6 +62,9 @@ public sealed class HidMonitor : IDisposable
 
     public bool IsSwitchPro => _device.VendorID == 0x057E;
 
+    /// <summary>Set by the engine's owner only: diagnostic viewers must not reset the mode under a running engine.</summary>
+    public bool RestoreSimpleModeOnDispose { get; init; }
+
     void TryEnableSwitchImu()
     {
         if (!IsSwitchPro) return;
@@ -129,6 +132,11 @@ public sealed class HidMonitor : IDisposable
     public void Dispose()
     {
         _running = false;
+        if (RestoreSimpleModeOnDispose && IsSwitchPro && _stream != null)
+        {
+            // Put the pad back in simple HID mode (0x3F) so other apps and games can read it without a replug.
+            try { SendSubcommand(0x03, 0x3F); } catch { }
+        }
         _stream?.Dispose();
     }
 }
