@@ -6,7 +6,7 @@ Software pendamping untuk gamepad **Rexus GX500** di Windows. GX500 tidak punya 
 
 ## Fitur
 
-- **Remap tombol** — ubah fungsi tombol mana pun, atau nonaktifkan.
+- **Remap tombol** — ubah fungsi tombol mana pun, atau nonaktifkan. Klik langsung di gambar gamepad; tombol di gambar menyala saat ditekan.
 - **Turbo** per tombol, 2–30 tekan per detik.
 - **Tipe gamepad** per profil — game melihat controller **Xbox 360** atau **PlayStation (DualShock 4)**.
 - **Gyro** (mode Switch) → gerak mouse atau analog kanan. Sensitivitas, invert, deadzone, smoothing, kalibrasi drift, dan mode aktif (selalu / saat tombol ditahan / toggle).

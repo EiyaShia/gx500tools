@@ -28,6 +28,8 @@ public sealed class Engine : IDisposable
     public MacroRecorder Recorder { get; } = new();
     /// <summary>Latest mapped output, for display.</summary>
     public PadState Output { get; private set; }
+    /// <summary>Physical buttons currently held (before remap), for display.</summary>
+    public PadButton Physical { get; private set; }
 
     Engine(IPadSource source, Profile profile)
     {
@@ -77,6 +79,7 @@ public sealed class Engine : IDisposable
                         _pad = CreatePad(profile);
                     }
                     var physical = Mapper.Physical(input);
+                    Physical = physical;
 
                     Recorder.Feed(physical);
                     var (macroConsumed, injected) = _macros.Update(physical, profile.Macros, now);

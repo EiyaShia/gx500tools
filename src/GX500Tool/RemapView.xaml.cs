@@ -14,7 +14,8 @@ public partial class RemapView : UserControl
 
     readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(30) };
     readonly Dictionary<PadButton, (ComboBox Target, CheckBox Turbo, Border Live)> _rows = new();
-    bool _loading;
+    readonly List<string> _options = [Same, .. PadState.AllButtons.Select(b => b.ToString()), Disabled];
+    bool _loading, _loadingSelection;
 
     static Profile Profile => Session.Profile;
     Brush KeyBrush => (Brush)FindResource("KeyBrush");
@@ -24,6 +25,8 @@ public partial class RemapView : UserControl
     {
         InitializeComponent();
         ProfilePath.Text = "Tersimpan otomatis di:\n" + Session.ProfilesDir;
+        SelTarget.ItemsSource = _options;
+        PadView.ButtonSelected += ShowSelected;
         BuildRows();
         LoadIntoUi();
 
@@ -38,10 +41,6 @@ public partial class RemapView : UserControl
 
     void BuildRows()
     {
-        var options = new List<string> { Same };
-        options.AddRange(PadState.AllButtons.Select(b => b.ToString()));
-        options.Add(Disabled);
-
         int row = 0;
         foreach (var b in PadState.AllButtons)
         {
@@ -52,7 +51,7 @@ public partial class RemapView : UserControl
                 CornerRadius = new CornerRadius(6), Margin = new Thickness(0, 3, 10, 3), Padding = new Thickness(0, 5, 0, 5),
                 Child = new TextBlock { Text = b.ToString(), FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
             };
-            var combo = new ComboBox { ItemsSource = options, Margin = new Thickness(2), VerticalAlignment = VerticalAlignment.Center };
+            var combo = new ComboBox { ItemsSource = _options, Margin = new Thickness(2), VerticalAlignment = VerticalAlignment.Center };
             var turbo = new CheckBox { Content = "Turbo", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) };
             var live = new Border { Width = 12, Height = 12, CornerRadius = new CornerRadius(6), Background = KeyBrush, HorizontalAlignment = HorizontalAlignment.Left, ToolTip = "Output saat ini" };
 
@@ -118,8 +117,50 @@ public partial class RemapView : UserControl
         TurboLabel.Text = $"Kecepatan: {Profile.TurboHz:0} tekan/detik";
         LdzLabel.Text = $"Kiri: {Profile.LeftDeadzone * 100:0}%";
         RdzLabel.Text = $"Kanan: {Profile.RightDeadzone * 100:0}%";
+        PadView.Refresh(Profile);
+        if (PadView.Selected != PadButton.None) ShowSelected(PadView.Selected);
         if (!_loading) Session.Save();
     }
+
+    /// <summary>Fills the editor card for a button picked on the drawing. Edits go through the list rows.</summary>
+    void ShowSelected(PadButton b)
+    {
+        _loadingSelection = true;
+        EditorCard.IsEnabled = true;
+        SelLabel.Text = GamepadView.Label(b, Profile.Type);
+        SelTarget.SelectedItem = _rows[b].Target.SelectedItem;
+        SelTurbo.IsChecked = Profile.Turbo.Contains(b);
+        _loadingSelection = false;
+    }
+
+    void SelTarget_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loadingSelection || PadView.Selected == PadButton.None) return;
+        _rows[PadView.Selected].Target.SelectedItem = SelTarget.SelectedItem; // row handler updates the profile
+    }
+
+    void SelTurbo_Click(object sender, RoutedEventArgs e)
+    {
+        var b = PadView.Selected;
+        if (b == PadButton.None) return;
+        bool on = SelTurbo.IsChecked == true;
+        if (on) Profile.Turbo.Add(b); else Profile.Turbo.Remove(b);
+        _rows[b].Turbo.IsChecked = on;
+        Changed();
+    }
+
+    void SelReset_Click(object sender, RoutedEventArgs e)
+    {
+        var b = PadView.Selected;
+        if (b == PadButton.None) return;
+        Profile.Turbo.Remove(b);
+        _rows[b].Turbo.IsChecked = false;
+        _rows[b].Target.SelectedItem = Same; // row handler removes the remap and saves
+        Changed();
+    }
+
+    void ShowList_Click(object sender, RoutedEventArgs e) =>
+        ListRow.Height = ShowListCheck.IsChecked == true ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
 
     void Start_Click(object sender, RoutedEventArgs e)
     {
@@ -143,6 +184,7 @@ public partial class RemapView : UserControl
             StartButton.Content = "▶ Aktifkan virtual controller";
             if (!StatusText.Text.StartsWith("G")) StatusText.Text = "Nonaktif"; // keep error messages visible
             foreach (var r in _rows.Values) r.Live.Background = KeyBrush;
+            PadView.SetLive(PadButton.None);
         }
         else
         {
@@ -177,5 +219,6 @@ public partial class RemapView : UserControl
         var o = engine.Output;
         foreach (var (b, r) in _rows)
             r.Live.Background = o.IsPressed(b) ? AccentBrush : KeyBrush;
+        PadView.SetLive(engine.Physical);
     }
 }
