@@ -11,10 +11,29 @@ public partial class App : Application
 
     public static AutoSwitcher? Switcher { get; private set; }
 
+    const string InstanceName = "GX500Tool.SingleInstance", ShowSignalName = "GX500Tool.ShowWindow";
+    static Mutex? _instance;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    static extern bool AllowSetForegroundWindow(int processId);
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        // One instance only: two would both read the GX500 and add a second tray icon.
+        // A second launch asks the running one to show its window, then exits.
+        _instance = new Mutex(true, InstanceName, out bool isFirst);
+        if (!isFirst)
+        {
+            AllowSetForegroundWindow(-1); // let the running instance bring itself to the front
+            if (EventWaitHandle.TryOpenExisting(ShowSignalName, out var signal)) signal.Set();
+            Shutdown();
+            return;
+        }
+        var showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSignalName);
+        ThreadPool.RegisterWaitForSingleObject(showSignal, (_, _) => Dispatcher.BeginInvoke(ShowWindow), null, Timeout.Infinite, false);
 
         _window = new MainWindow();
         _window.Closing += Window_Closing;
@@ -49,6 +68,9 @@ public partial class App : Application
         _window!.Show();
         if (_window.WindowState == WindowState.Minimized) _window.WindowState = WindowState.Normal;
         _window.Activate();
+        // Activate() alone may only flash the taskbar when triggered from another process.
+        _window.Topmost = true;
+        _window.Topmost = false;
     }
 
     /// <summary>Closing the window keeps the app running in the tray; use "Keluar" in the tray menu to quit.</summary>
