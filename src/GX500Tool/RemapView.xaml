@@ -8,9 +8,6 @@
 
         <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,6">
             <Button x:Name="StartButton" Content="▶ Aktifkan virtual controller" Style="{StaticResource AccentButton}" Click="Start_Click"/>
-            <CheckBox x:Name="HideCheck" Margin="14,0,0,0" VerticalAlignment="Center" Click="HideCheck_Click"
-                      Content="Sembunyikan controller asli saat aktif"
-                      ToolTip="Mode Switch saja. Controller asli otomatis terlihat lagi saat virtual controller dimatikan atau app ditutup. Butuh izin admin (UAC)."/>
             <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="12,0" Text="Nonaktif"/>
         </StackPanel>
 
@@ -54,6 +51,14 @@
 
         <ScrollViewer Grid.Row="1" Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
+                <GroupBox Header="Sembunyikan dari Windows">
+                    <StackPanel>
+                        <CheckBox x:Name="HideCheck" Content="Sembunyikan GX500 mode Switch (disarankan)" Click="HideCheck_Click"
+                                  ToolTip="Di mode Switch, GX500 terus mengirim data gyro yang membuat Windows menutup Start menu, tray, dan prompt UAC. Setelah disembunyikan, hanya app ini yang bisa membacanya."/>
+                        <TextBlock x:Name="HideStatus" TextWrapping="Wrap" FontSize="11" Margin="0,8,0,0"/>
+                        <Button x:Name="ApplyHideButton" Content="Terapkan HidHide" Margin="0,8,0,0" Style="{StaticResource AccentButton}" Click="ApplyHide_Click"/>
+                    </StackPanel>
+                </GroupBox>
                 <GroupBox Header="Tipe gamepad">
                     <StackPanel>
                         <RadioButton x:Name="TypeXbox" GroupName="padtype" Margin="0,3" Click="Type_Click"

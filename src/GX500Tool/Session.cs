@@ -9,8 +9,14 @@ public sealed class AppSettings
     public string ActiveProfile { get; set; } = "Default";
     public bool AutoSwitch { get; set; } = true;
     public bool AutoStartEngine { get; set; } = true;
-    /// <summary>Hide the physical pad (HidHide) while the virtual pad runs; shown again when it stops.</summary>
-    public bool HideController { get; set; }
+    /// <summary>Keep the Switch-mode GX500 permanently hidden from Windows (HidHide).</summary>
+    public bool HideSwitchMode { get; set; }
+    /// <summary>Last Switch-mode instance ID seen, so it can be hidden while the pad is in another mode.</summary>
+    public string? KnownSwitchInstance { get; set; }
+    /// <summary>Instance IDs this app asked HidHide to hide.</summary>
+    public List<string> HiddenInstances { get; set; } = new();
+    /// <summary>Exe paths this app registered with HidHide (only these can see the hidden pad).</summary>
+    public List<string> AllowedApps { get; set; } = new();
 }
 
 /// <summary>State shared by all tabs and the tray: profiles, the active one, and the running engine.</summary>
@@ -131,7 +137,11 @@ public static class Session
     public static bool Start()
     {
         Engine = Engine.Start(Profile);
-        if (Settings.HideController) HideNow();
+        if (Engine?.Source is Input.SwitchSource s)
+        {
+            var id = Output.HidHide.ToInstanceId(s.DevicePath);
+            if (Settings.KnownSwitchInstance != id) SetSetting(x => x.KnownSwitchInstance = id);
+        }
         Changed?.Invoke();
         return Engine != null;
     }
@@ -139,33 +149,60 @@ public static class Session
     public static void Stop()
     {
         if (Engine == null) return;
-        UnhideNow();
         Engine.Dispose();
         Engine = null;
         Changed?.Invoke();
     }
 
-    /// <summary>Device path currently hidden by us, so it can be shown again on stop/exit.</summary>
-    static string? _hiddenPath;
-
-    /// <summary>Last HidHide failure (e.g. the UAC prompt was declined), for display.</summary>
-    public static string? HideError { get; private set; }
-
-    public static void HideNow()
+    /// <summary>What still needs a "Terapkan HidHide" run, or null when hiding is off or fully applied.</summary>
+    public static string? HideProblem
     {
-        if (Engine?.Source is not Input.SwitchSource s || !Output.HidHide.IsInstalled || _hiddenPath != null) return;
-        try { Output.HidHide.Hide(s.DevicePath); _hiddenPath = s.DevicePath; HideError = null; }
-        catch (Exception ex) { HideError = ex.Message; }
+        get
+        {
+            if (!Settings.HideSwitchMode) return null;
+            if (Settings.KnownSwitchInstance == null)
+                return "Colokkan GX500 di mode Switch dan aktifkan virtual controller sekali, supaya ID-nya tercatat.";
+            if (!Settings.HiddenInstances.Contains(Settings.KnownSwitchInstance))
+                return "GX500 mode Switch belum disembunyikan.";
+            if (!Settings.AllowedApps.Contains(Environment.ProcessPath!, StringComparer.OrdinalIgnoreCase))
+                return "Exe ini belum diizinkan HidHide, jadi tidak bisa membaca GX500 mode Switch.";
+            return null;
+        }
     }
 
-    public static void UnhideNow()
+    /// <summary>The pad is visible in Switch mode right now; UAC prompts would be closed by its input.</summary>
+    static bool SwitchModeConnected => Input.HidMonitor.FindControllers().Any(d => d.VendorID == 0x057E);
+
+    /// <summary>Allows this exe and hides the known Switch instance. Returns an error message, or null on success.</summary>
+    public static string? ApplyHide()
     {
-        if (_hiddenPath == null) return;
-        try { Output.HidHide.Unhide(_hiddenPath); _hiddenPath = null; HideError = null; }
-        catch (Exception ex) { HideError = ex.Message; }
+        if (Settings.KnownSwitchInstance is not { } id) return HideProblem;
+        if (SwitchModeConnected && !Settings.HiddenInstances.Contains(id))
+            return "Pindahkan GX500 ke mode X-Input dulu (prompt UAC akan langsung tertutup di mode Switch), lalu klik lagi.";
+        Stop(); // release the pad; the engine can be started again afterwards
+        try { Output.HidHide.Apply(Environment.ProcessPath!, [id]); }
+        catch (OperationCanceledException) { return "Prompt UAC ditolak atau tertutup. Pastikan GX500 tidak di mode Switch, lalu coba lagi."; }
+        SetSetting(s =>
+        {
+            if (!s.HiddenInstances.Contains(id)) s.HiddenInstances.Add(id);
+            if (!s.AllowedApps.Contains(Environment.ProcessPath!, StringComparer.OrdinalIgnoreCase)) s.AllowedApps.Add(Environment.ProcessPath!);
+        });
+        Changed?.Invoke();
+        return null;
     }
 
-    public static bool IsHidden => _hiddenPath != null;
+    /// <summary>Shows the pad to Windows again. Returns an error message, or null on success.</summary>
+    public static string? RemoveHide()
+    {
+        if (Settings.HiddenInstances.Count == 0) return null;
+        if (SwitchModeConnected)
+            return "Pindahkan GX500 ke mode X-Input dulu (prompt UAC akan langsung tertutup di mode Switch), lalu klik lagi.";
+        try { Output.HidHide.Remove(Settings.HiddenInstances); }
+        catch (OperationCanceledException) { return "Prompt UAC ditolak atau tertutup."; }
+        SetSetting(s => s.HiddenInstances.Clear());
+        Changed?.Invoke();
+        return null;
+    }
 
     public static void NotifyChanged() => Changed?.Invoke();
 

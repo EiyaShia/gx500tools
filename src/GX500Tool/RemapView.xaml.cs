@@ -91,8 +91,9 @@ public partial class RemapView : UserControl
         }
         TypeXbox.IsChecked = Profile.Type == GamepadType.Xbox;
         TypePlayStation.IsChecked = Profile.Type == GamepadType.PlayStation;
-        HideCheck.IsChecked = Session.Settings.HideController;
+        HideCheck.IsChecked = Session.Settings.HideSwitchMode;
         HideCheck.IsEnabled = HidHide.IsInstalled;
+        UpdateHideStatus(null);
         TurboSlider.Value = Profile.TurboHz;
         LdzSlider.Value = Profile.LeftDeadzone * 100;
         RdzSlider.Value = Profile.RightDeadzone * 100;
@@ -188,9 +189,7 @@ public partial class RemapView : UserControl
         }
         else
         {
-            StatusText.Text = $"Aktif · input: {engine.Source.Name} → virtual {engine.PadName}"
-                + (Session.IsHidden ? " · controller asli disembunyikan" : "")
-                + (Session.HideError != null ? " · HidHide gagal: " + Session.HideError : "");
+            StatusText.Text = $"Aktif · input: {engine.Source.Name} → virtual {engine.PadName}";
             StartButton.Content = "■ Matikan virtual controller";
             _timer.Start();
         }
@@ -199,11 +198,30 @@ public partial class RemapView : UserControl
 
     void HideCheck_Click(object sender, RoutedEventArgs e)
     {
-        bool hide = HideCheck.IsChecked == true;
-        Session.SetSetting(s => s.HideController = hide);
-        if (Session.Engine == null) return; // applied on next start
-        if (hide) Session.HideNow(); else Session.UnhideNow();
-        OnSessionChanged();
+        if (HideCheck.IsChecked == true)
+        {
+            Session.SetSetting(s => s.HideSwitchMode = true);
+            UpdateHideStatus(null);
+            return;
+        }
+        var error = Session.RemoveHide();
+        if (error == null) Session.SetSetting(s => s.HideSwitchMode = false);
+        else HideCheck.IsChecked = true;
+        UpdateHideStatus(error);
+    }
+
+    void ApplyHide_Click(object sender, RoutedEventArgs e) => UpdateHideStatus(Session.ApplyHide());
+
+    /// <summary>Shows hiding state; <paramref name="error"/> is the last action's failure, if any.</summary>
+    void UpdateHideStatus(string? error)
+    {
+        var problem = Session.HideProblem;
+        ApplyHideButton.Visibility = Session.Settings.HideSwitchMode && problem != null ? Visibility.Visible : Visibility.Collapsed;
+        HideStatus.Foreground = (Brush)FindResource(error != null || problem != null ? "GoldBrush" : "MutedBrush");
+        HideStatus.Text = error != null ? "⚠ " + error
+            : !Session.Settings.HideSwitchMode ? "Mati. Di mode Switch, Windows bisa terus menutup Start menu, tray, dan prompt UAC."
+            : problem != null ? $"⚠ {problem} Pindahkan GX500 ke mode X-Input, lalu klik Terapkan HidHide."
+            : "✓ Aktif. GX500 mode Switch tersembunyi dari Windows; hanya app ini yang bisa membacanya.";
     }
 
     void Reset_Click(object sender, RoutedEventArgs e)

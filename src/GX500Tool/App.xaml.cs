@@ -38,6 +38,9 @@ public partial class App : Application
             try { Session.Start(); } catch { /* reported when the user starts it manually */ }
         }
 
+        if (Session.HideProblem is { } hideProblem)
+            _tray.Notify("HidHide perlu diterapkan: " + hideProblem + " Buka halaman Remap & Turbo.");
+
         if (!e.Args.Contains("--tray")) ShowWindow();
     }
 

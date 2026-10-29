@@ -34,6 +34,8 @@ GX500 punya 3 mode. Mode yang disarankan: **Switch**.
 | X-Input | ✅ | ❌ | ❌ (game bisa melihat 2 controller) | ✅ |
 | D-Input | ❌ | ❌ | — | — |
 
+**Penting untuk mode Switch:** firmware GX500 di mode Switch terus mengirim data gyro (± 125 kali per detik) dan tidak bisa dimatikan. Windows 11 membacanya sebagai input controller, sehingga Start menu, tray, notifikasi, bahkan prompt UAC langsung tertutup sendiri. Solusinya: aktifkan **Sembunyikan GX500 mode Switch** di halaman Remap & Turbo. Klik **Terapkan HidHide** saat GX500 sedang di mode **X-Input** (di mode Switch, prompt UAC akan ikut tertutup). Setelah itu GX500 mode Switch hanya terlihat oleh GX500 Tool. Langkah ini perlu diulang sekali setiap memakai exe di lokasi atau nama file baru.
+
 Catatan: dua tombol tambahan di bawah analog kanan adalah tombol macro hardware. Secara default keduanya mengirim D-pad Kiri/Kanan, sehingga tidak bisa dibedakan dari D-pad di software.
 
 ## Instalasi
@@ -55,7 +57,7 @@ Catatan: dua tombol tambahan di bawah analog kanan adalah tombol macro hardware.
 
 1. Pindahkan GX500 ke **mode Switch** dan colokkan.
 2. Buka app, klik **Aktifkan** di sidebar. Virtual Xbox 360 controller akan muncul.
-3. Di halaman **Remap & Turbo**, klik **Sembunyikan controller asli** (minta izin admin sekali).
+3. Di halaman **Remap & Turbo**, centang **Sembunyikan GX500 mode Switch**, pindahkan GX500 ke mode X-Input, klik **Terapkan HidHide** (minta izin admin sekali), lalu kembali ke mode Switch.
 4. Atur remap, gyro, macro, atau keyboard sesuai kebutuhan. Semua tersimpan otomatis.
 5. Untuk profil per game: buka game-nya, kembali ke halaman **Profil**, lalu klik **Tambah \<game\>.exe**.
 

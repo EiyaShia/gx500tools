@@ -1,12 +1,18 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 
 namespace GX500Tool.Output;
 
-/// <summary>Hides the physical controller from games via HidHideCLI, so they only see the virtual pad.</summary>
+/// <summary>
+/// Hides the Switch-mode GX500 from Windows via HidHideCLI. In Switch mode the pad streams IMU reports
+/// nonstop, which makes Windows close the Start menu, tray flyouts and even UAC prompts, so hiding is
+/// permanent and changes must be applied while the pad is NOT in Switch mode.
+/// </summary>
 public static class HidHide
 {
     const string Cli = @"C:\Program Files\Nefarius Software Solutions\HidHide\x64\HidHideCLI.exe";
+    const int UacCancelled = 1223;
 
     public static bool IsInstalled => File.Exists(Cli);
 
@@ -17,16 +23,24 @@ public static class HidHide
         return string.Join('\\', parts.Take(3)).ToUpperInvariant();
     }
 
-    public static void Hide(string devicePath) => Run(
-        $"--app-reg \"{Environment.ProcessPath}\" --dev-hide \"{ToInstanceId(devicePath)}\" --cloak-on");
+    /// <summary>Allows <paramref name="appPath"/> to see hidden devices, hides the instances, and turns hiding on.</summary>
+    public static void Apply(string appPath, IEnumerable<string> instanceIds) => Run(
+        $"--app-reg \"{appPath}\" " + string.Join(' ', instanceIds.Select(id => $"--dev-hide \"{id}\"")) + " --cloak-on");
 
-    public static void Unhide(string devicePath) => Run(
-        $"--dev-unhide \"{ToInstanceId(devicePath)}\" --cloak-off");
+    public static void Remove(IEnumerable<string> instanceIds) => Run(
+        string.Join(' ', instanceIds.Select(id => $"--dev-unhide \"{id}\"")));
 
+    /// <summary>Runs HidHideCLI elevated (one UAC prompt). Throws <see cref="OperationCanceledException"/> if UAC was declined or closed.</summary>
     static void Run(string args)
     {
-        // HidHideCLI needs admin rights; Windows will show a UAC prompt.
-        using var p = Process.Start(new ProcessStartInfo(Cli, args) { UseShellExecute = true, Verb = "runas", WindowStyle = ProcessWindowStyle.Hidden });
-        p?.WaitForExit();
+        try
+        {
+            using var p = Process.Start(new ProcessStartInfo(Cli, args) { UseShellExecute = true, Verb = "runas", WindowStyle = ProcessWindowStyle.Hidden });
+            p?.WaitForExit();
+        }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == UacCancelled)
+        {
+            throw new OperationCanceledException("Prompt UAC ditolak atau tertutup.", ex);
+        }
     }
 }
